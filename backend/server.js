@@ -15,28 +15,116 @@ app.use(bodyParser.json());
 // Connect MongoDB
 connectDB();
 
-// ✅ Route to GET holdings (used in frontend)
 app.get("/holdings", async (req, res) => {
   try {
     const allHoldings = await HoldingsModel.find({});
     res.json(allHoldings);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch holdings" });
+    res.status(500).json({ error: "Failed to fetch positions" });
   }
 });
-
-
-
-// ✅ Route to POST and insert new holdings (for backend testing)
-app.post("/addHoldings", async (req, res) => {
+  /*
+  const holdings = [
+    {
+    instrument: 'BHARTIARTL',
+    qty: 2,
+    avgCost: 538.05,
+    ltp: 541.15,
+    curVal: 1082.30,
+    pnl: 6.20,
+    netChg: 0.38,
+    dayChg: 0.56
+  },
+  {
+    instrument: 'HDFCBANK',
+    qty: 2,
+    avgCost: 1383.40,
+    ltp: 1522.35,
+    curVal: 3044.70,
+    pnl: 277.90,
+    netChg: 10.04,
+    dayChg: 0.11
+  },
+  {
+    instrument: 'HINDUNILVR',
+    qty: 1,
+    avgCost: 2335.85,
+    ltp: 2417.40,
+    curVal: 2417.40,
+    pnl: 81.55,
+    netChg: 3.49,
+    dayChg: 0.21
+  },
+  {
+    instrument: 'ITC',
+    qty: 5,
+    avgCost: 455.20,
+    ltp: 462.85,
+    curVal: 2314.25,
+    pnl: 38.25,
+    netChg: 1.68,
+    dayChg: 0.43
+  },
+  {
+    instrument: 'RELIANCE',
+    qty: 1,
+    avgCost: 2089.75,
+    ltp: 2112.40,
+    curVal: 2112.40,
+    pnl: 22.65,
+    netChg: 1.08,
+    dayChg: 1.44
+  },
+  {
+    instrument: 'TATASTEEL',
+    qty: 3,
+    avgCost: 125.30,
+    ltp: 128.95,
+    curVal: 386.85,
+    pnl: 10.95,
+    netChg: 2.91,
+    dayChg: -0.23
+  },
+  {
+    instrument: 'INFY',
+    qty: 6,
+    avgCost: 1578.90,
+    ltp: 1555.45,
+    curVal: 1555.45,
+    pnl: -23.45,
+    netChg: -1.49,
+    dayChg: -1.60
+  }
+  ];
   try {
     await HoldingsModel.deleteMany({});
-    const result = await HoldingsModel.insertMany(req.body);
-    res.json({ message: "Success", done: true });
+    await HoldingsModel.insertMany(holdings);
+    return res.send("Holding seeded successfully."); // use return to prevent further execution
   } catch (err) {
-    res.status(500).send("❌ Error adding holdings");
+    console.error(err);
+    return res.status(500).send("Seeding failed.");
   }
 });
+*/
+
+// Add holdings
+app.post("/holdings", async (req, res) => {
+  try {
+    await HoldingsModel.deleteMany({});
+    await HoldingsModel.insertMany(req.body);
+     const result = await HoldingsModel.insertMany(req.body);
+    res.json({ message: "Holdings added successfully", done: true });
+  } catch (err) {
+    res.status(500).send("Error adding holdings");
+  }
+
+
+});
+
+
+
+
+
 
 /*
 app.get("/seedPositions", async (req, res) => {
@@ -123,11 +211,8 @@ app.post("/addPositions", async (req, res) => {
   }
 });
 
-
-/*
-// ✅ Optional: One-time seeding using GET /seedHoldings
 app.get("/seedHoldings", async (req, res) => {
-  const holdings = [ ... ]; // your array
+  const holdings = []; // your array (currently empty, add objects as needed)
   try {
     await HoldingsModel.deleteMany({});
     await HoldingsModel.insertMany(holdings);
@@ -136,6 +221,8 @@ app.get("/seedHoldings", async (req, res) => {
     res.status(500).send("❌ Seeding failed");
   }
 });
-*/
+
+
+
 
 app.listen(3002, () => console.log("🚀 Server running on port 3002"));
