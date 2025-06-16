@@ -5,6 +5,7 @@ const cors = require("cors");
 require("dotenv").config();
 const bodyParser = require("body-parser");
 const PositionsModel = require("./model/PositionsModel");
+const OrdersModel = require("./model/OrdersModel");
 
 
 const app = express();
@@ -14,6 +15,7 @@ app.use(bodyParser.json());
 
 // Connect MongoDB
 connectDB();
+//Holdings Section
 
 app.get("/holdings", async (req, res) => {
   try {
@@ -104,8 +106,8 @@ app.get("/holdings", async (req, res) => {
     console.error(err);
     return res.status(500).send("Seeding failed.");
   }
-});
-*/
+});*/
+
 
 // Add holdings
 app.post("/holdings", async (req, res) => {
@@ -117,11 +119,9 @@ app.post("/holdings", async (req, res) => {
   } catch (err) {
     res.status(500).send("Error adding holdings");
   }
-
-
 });
 
-
+//END
 
 
 
@@ -190,7 +190,7 @@ app.get("/seedPositions", async (req, res) => {
 });
 */
 
-
+// Positions Section
 
 app.get("/positions", async (req, res) => {
   try {
@@ -222,7 +222,31 @@ app.get("/seedHoldings", async (req, res) => {
   }
 });
 
+//End
+//orders Section
 
+app.get("/orders", async (req, res) => {
+  try {
+    const orders = await OrdersModel.find().sort({ _id: -1 }); // latest orders first
+    res.status(200).json({ orders });
+  } catch (err) {
+    console.error("Fetch orders error:", err);
+    res.status(500).json({ error: "Failed to fetch orders" });
+  }
+});
+
+
+app.post("/orders", async (req, res) => {
+  try {
+    const order = new OrdersModel(req.body);
+    await order.save();
+    const orders = await OrdersModel.find().sort({ _id: -1 }); 
+    res.status(201).json({ message: "Order created successfully", order });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create order" });
+  }
+});
 
 
 app.listen(3002, () => console.log("🚀 Server running on port 3002"));
