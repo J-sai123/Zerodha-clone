@@ -7,18 +7,27 @@ const bodyParser = require("body-parser");
 const PositionsModel = require("./model/PositionsModel");
 const OrdersModel = require("./model/OrdersModel");
 const cookieParser = require('cookie-parser');
-const jwt = require('jsonwebtoken');
-
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const User = require("./model/User"); 
+// Removed duplicate and unnecessary top-level destructuring of mobilenumber
 
 
 const app = express();
+
+app.use(cors({
+  origin: 'http://192.168.1.6:8080',
+  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+}));
 app.use(express.json());
-app.use(cors());
 app.use(bodyParser.json());
 app.use(cookieParser());
 
 // Connect MongoDB
-connectDB();
+connectDB(); // Add console.log just before this
+console.log("⏳ Connecting to DB...");
+
 //Holdings Section
 
 app.get("/holdings", async (req, res) => {
@@ -251,9 +260,66 @@ app.post("/orders", async (req, res) => {
     res.status(500).json({ error: "Failed to create order" });
   }
 });
+app.get("/register", (req, res) => {
+  res.send("Register endpoint");
+}); 
 
-app.use('/api/auth', require('./routes/auth'));
+
+// Assuming you have a User model defined
+
+app.post('/register', async (req, res) => {
+  try {
+    const { username, email, password, mobileNumber } = req.body;
+
+    // Validate all fields
+    if (!username || !email || !password || !mobileNumber) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    // Check for existing user
+    const existingUser = await User.findOne({ mobileNumber });
+    if (existingUser) {
+      return res.status(409).json({ message: 'User with this mobile number already exists' });
+    }
+
+    // Create user
+    const newUser = new User({ username, email, password, mobileNumber });
+    await newUser.save();
+
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (err) {
+    console.error('Registration error:', err);
+    res.status(500).json({ message: 'Signup failed', error: err.message });
+  }
+});
+
+app.post('/login', async (req, res) => {
+  const { mobileNumber, password } = req.body;
+
+  if (!mobileNumber || !password) {
+    return res.status(400).json({ message: 'Missing credentials' });
+  }
+
+  try {
+    const user = await User.findOne({ mobileNumber });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid password' });
+    }
+
+    // Optional: generate JWT and send token here
+    res.status(200).json({ message: 'Login successful' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 
 
+const PORT = process.env.PORT || 3002;
 app.listen(3002, () => console.log("🚀 Server running on port 3002"));
