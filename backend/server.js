@@ -6,12 +6,16 @@ require("dotenv").config();
 const bodyParser = require("body-parser");
 const PositionsModel = require("./model/PositionsModel");
 const OrdersModel = require("./model/OrdersModel");
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+
 
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 // Connect MongoDB
 connectDB();
@@ -247,6 +251,9 @@ app.post("/orders", async (req, res) => {
     res.status(500).json({ error: "Failed to create order" });
   }
 });
+
+app.use('/api/auth', require('./routes/auth'));
+
 
 
 app.listen(3002, () => console.log("🚀 Server running on port 3002"));
