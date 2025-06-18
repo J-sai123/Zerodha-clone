@@ -15,11 +15,8 @@ const User = require("./model/User");
 
 const app = express();
 
-app.use(cors({
-  origin: 'http://192.168.1.6:8080',
-  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
-}));
+app.use(cors()
+ );
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -260,6 +257,14 @@ app.post("/orders", async (req, res) => {
     res.status(500).json({ error: "Failed to create order" });
   }
 });
+
+app.use(cors({
+  origin: 'http://192.168.1.6:8080',
+  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+}));
+
+
 app.get("/register", (req, res) => {
   res.send("Register endpoint");
 }); 
