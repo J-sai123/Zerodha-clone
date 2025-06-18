@@ -297,7 +297,6 @@ app.post('/register', async (req, res) => {
     res.status(500).json({ message: 'Signup failed', error: err.message });
   }
 });
-
 app.post('/login', async (req, res) => {
   const { mobileNumber, password } = req.body;
 
@@ -307,22 +306,31 @@ app.post('/login', async (req, res) => {
 
   try {
     const user = await User.findOne({ mobileNumber });
+    console.log('User:', user);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Password match:', isMatch);
+
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid password' });
     }
 
-    // Optional: generate JWT and send token here
-    res.status(200).json({ message: 'Login successful' });
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET is not defined');
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    res.status(200).json({ message: 'Login successful', token });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Login error:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
+
+
 
 
 
